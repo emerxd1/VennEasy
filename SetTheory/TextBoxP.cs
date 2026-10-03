@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Runtime.InteropServices;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace TextBoxRGB
 {
@@ -328,6 +329,11 @@ namespace TextBoxRGB
         private void textBox1_KeyPress(object sender, KeyPressEventArgs e)
         {
             this.OnKeyPress(e);
+        }
+
+        private void textBox1_TextChanged_1(object sender, EventArgs e)
+        {
+
         }
     }
 }

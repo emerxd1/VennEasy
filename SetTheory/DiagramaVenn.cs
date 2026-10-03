@@ -18,8 +18,9 @@ namespace Main
         // ---------------------------------------------------------------
         // DIBUJAR
         // ---------------------------------------------------------------
+        // NUEVO: parámetro "personalizada"
         public void Dibujar(Plot plt, List<Conjunto> conjuntos, Conjunto universo,
-                            Operacion op = Operacion.Ninguna)
+                            Operacion op = Operacion.Ninguna, Func<int, bool> personalizada = null)
         {
             plt.Clear();
 
@@ -29,6 +30,7 @@ namespace Main
             // El orden importa: lo primero que se dibuja queda detrás
             DibujarUniverso(plt, universo, caja);
             ResaltarOperacion(plt, centros, op);
+            ResaltarPersonalizada(plt, centros, caja, personalizada);   // NUEVO
             DibujarConjuntos(plt, conjuntos, centros);
             DibujarElementos(plt, conjuntos, universo, centros, caja);
             AjustarVista(plt, caja);
@@ -140,6 +142,58 @@ namespace Main
                 case Operacion.DiferenciaSimetrica: return new[] { par.SoloA(), par.SoloB() };
                 default: return Array.Empty<Coordinates[]>();
             }
+        }
+
+        // ---------------------------------------------------------------
+        // NUEVO: RESALTADO DE OPERACIÓN PERSONALIZADA
+        // Recorre el cuadro en franjas y pinta las zonas cuya región (máscara)
+        // pertenece al resultado.
+        // ---------------------------------------------------------------
+        private static void ResaltarPersonalizada(Plot plt, IReadOnlyList<Punto> centros, Caja caja,
+                                                  Func<int, bool> incluye)
+        {
+            if (incluye == null) return;
+
+            const double paso = 0.03;
+            var color = ScottPlot.Colors.Gold.WithAlpha(AlfaResaltado);
+            int filas = (int)Math.Ceiling((caja.Arriba - caja.Abajo) / paso);
+            int columnas = (int)Math.Ceiling((caja.Derecha - caja.Izquierda) / paso);
+
+            for (int f = 0; f < filas; f++)
+            {
+                double y0 = caja.Abajo + f * paso;
+                double yCentro = y0 + paso / 2;
+                int inicio = -1;
+
+                for (int c = 0; c <= columnas; c++)
+                {
+                    bool dentro = false;
+                    if (c < columnas)
+                    {
+                        var p = new Punto(caja.Izquierda + (c + 0.5) * paso, yCentro);
+                        dentro = incluye(MascaraDe(p, centros));
+                    }
+
+                    if (dentro && inicio < 0) inicio = c;
+                    else if (!dentro && inicio >= 0)
+                    {
+                        var rect = plt.Add.Rectangle(
+                            caja.Izquierda + inicio * paso, caja.Izquierda + c * paso, y0, y0 + paso);
+                        rect.FillColor = color;
+                        rect.LineWidth = 0;
+                        inicio = -1;
+                    }
+                }
+            }
+        }
+
+        // NUEVO: en qué círculos está un punto (bit i = dentro del círculo i)
+        private static int MascaraDe(Punto p, IReadOnlyList<Punto> centros)
+        {
+            int mascara = 0;
+            for (int i = 0; i < centros.Count; i++)
+                if (GeometriaVenn.Distancia(p, centros[i]) <= Radio) mascara |= 1 << i;
+            return mascara;
         }
 
         // Puntos sobre un círculo de radio Radio, de un ángulo a otro (puede ir en ambos sentidos)

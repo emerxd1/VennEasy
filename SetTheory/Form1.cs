@@ -10,6 +10,7 @@ namespace SetTheory
         private readonly DiagramaVenn diagrama = new DiagramaVenn();
         private Conjunto conjuntoActual;          // el conjunto (o universo) seleccionado
         private bool diagramaGenerado = false;
+        private Func<int, bool> personalizada;    // NUEVO: operación escrita por el usuario (null = ninguna)
 
         public Form1()
         {
@@ -22,6 +23,18 @@ namespace SetTheory
             btnDiff2.Click += (s, e) => Aplicar(operadores.OperadorDiferenciaBA);
             btnDiffSim.Click += (s, e) => Aplicar(operadores.OperadorDiferenciaSimetrica);
             btnClean.Click += (s, e) => Aplicar(operadores.Limpiar);
+
+            // NUEVO: operaciones personalizadas (CharUnion ya se conecta desde el diseñador)
+            CharInterseccion.Click += (s, e) => InsertarSimbolo("\u2229");   // ∩
+            CharResta.Click += (s, e) => InsertarSimbolo("\u2212");          // −
+            CharDSimetrica.Click += (s, e) => InsertarSimbolo("\u25B3");     // △
+            btnPersonalizada.Click += (s, e) => GenerarOperacionPersonalizada();
+
+            textBoxp1.BackColor = Color.FromArgb(30, 30, 30);
+            textBoxp1.ForeColor = Color.White;
+
+            txtElemento.BackColor = Color.FromArgb(30, 30, 30);
+            txtElemento.ForeColor = Color.White;
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -101,7 +114,7 @@ namespace SetTheory
         private void RedibujarSiHaceFalta()
         {
             if (!diagramaGenerado) return;
-            diagrama.Dibujar(formsPlot1.Plot, gestion.Conjuntos, gestion.Universo, operadores.Actual);
+            diagrama.Dibujar(formsPlot1.Plot, gestion.Conjuntos, gestion.Universo, operadores.Actual, personalizada);   // NUEVO: + personalizada
             formsPlot1.Refresh();
         }
 
@@ -116,7 +129,53 @@ namespace SetTheory
                 return;
             }
 
+            personalizada = null;      // una operación básica cancela la personalizada
             seleccionar();
+            RedibujarSiHaceFalta();
+        }
+
+        // ---------- Operaciones personalizadas ----------
+        private void CharUnion_Click(object sender, EventArgs e) => InsertarSimbolo("\u222A");
+
+        // Escribe un símbolo al final de la expresión (ignora el texto de ejemplo "Ej: ...")
+        private void InsertarSimbolo(string simbolo)
+        {
+            string actual = LeerExpresion();
+            textBoxp1.Text = actual + simbolo;
+        }
+
+        private string LeerExpresion()
+        {
+            string t = textBoxp1.Text.Trim();
+            if (t.StartsWith("Ej:") || t.StartsWith("\"Ej:")) return "";
+            return t;
+        }
+
+        private void GenerarOperacionPersonalizada()
+        {
+            if (!diagramaGenerado)
+            {
+                MessageBox.Show("Primero genera el diagrama.", "Información",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            string texto = LeerExpresion();
+            if (texto.Length == 0)
+            {
+                MessageBox.Show("Escribe una operación, por ejemplo: A∪B∩C", "Información",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            if (!ExpresionConjuntos.TryParse(texto, gestion.Conjuntos.Count, out var predicado, out string error))
+            {
+                MessageBox.Show(error, "Operación no válida", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            operadores.Limpiar();      // quita el resaltado de una operación básica
+            personalizada = predicado;
             RedibujarSiHaceFalta();
         }
 
@@ -243,6 +302,21 @@ namespace SetTheory
             {
                 MessageBox.Show("No se pudo guardar la imagen:\n" + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private void formsPlot1_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBoxp1_TextBoxTextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void txtElemento_TextBoxTextChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }

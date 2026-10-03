@@ -39,6 +39,7 @@
             textBox1.Name = "textBox1";
             textBox1.Size = new Size(247, 17);
             textBox1.TabIndex = 0;
+            textBox1.TextChanged += textBox1_TextChanged_1;
             // 
             // TextBoxP
             // 

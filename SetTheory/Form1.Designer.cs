@@ -258,6 +258,7 @@
             txtElemento.Padding = new Padding(2);
             txtElemento.Size = new Size(171, 25);
             txtElemento.TabIndex = 0;
+            txtElemento.TextBoxTextChanged += txtElemento_TextBoxTextChanged;
             // 
             // label3
             // 
@@ -356,6 +357,7 @@
             formsPlot1.Size = new Size(712, 584);
             formsPlot1.TabIndex = 0;
             formsPlot1.Visible = false;
+            formsPlot1.Load += formsPlot1_Load;
             // 
             // lblOp
             // 
@@ -511,8 +513,8 @@
             // textBoxp1
             // 
             textBoxp1.BackColor = Color.Gray;
-            textBoxp1.BorderColor = Color.MidnightBlue;
-            textBoxp1.BorderFocusColor = Color.FromArgb(128, 128, 255);
+            textBoxp1.BorderColor = Color.White;
+            textBoxp1.BorderFocusColor = Color.FromArgb(192, 192, 255);
             textBoxp1.BorderSize = 1;
             textBoxp1.Font = new Font("Segoe UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point, 0);
             textBoxp1.ForeColor = Color.Black;
@@ -523,6 +525,7 @@
             textBoxp1.Padding = new Padding(2);
             textBoxp1.Size = new Size(207, 25);
             textBoxp1.TabIndex = 24;
+            textBoxp1.TextBoxTextChanged += textBoxp1_TextBoxTextChanged;
             // 
             // label5
             // 
@@ -552,6 +555,7 @@
             CharUnion.Size = new Size(30, 30);
             CharUnion.TabIndex = 26;
             CharUnion.UseVisualStyleBackColor = false;
+            CharUnion.Click += CharUnion_Click;
             // 
             // CharInterseccion
             // 
